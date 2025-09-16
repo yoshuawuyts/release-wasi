@@ -10,8 +10,8 @@ NEXT="0.3.0-rc-$(date +'%Y-%m-%d')"
 # Define array of repo names (owner/repo format)
 repos=(
   # "webassembly/wasi-random"
-  "webassembly/wasi-clocks"
-  # "webassembly/wasi-filesystem"
+  # "webassembly/wasi-clocks"
+  "webassembly/wasi-filesystem"
   # "webassembly/wasi-sockets"
   # "webassembly/wasi-cli"
   # "webassembly/wasi-http"
@@ -42,12 +42,12 @@ for repo in "${repos[@]}"; do
   gh pr merge "$pr" -m
 
   # Create a new GitHub Release
-  gh release create v"$NEXT" --generate-notes
+  gh release create v"$NEXT" --prerelease --generate-notes
   gh release view v"$NEXT"
 
   # Wait for the release to finish releasing
   sleep 5 # Sleep to prevent race conditions
-  release_run="$(gh run list --workflow "update-0.3.yml" --branch v"$NEXT" --json databaseId | jq -r '.[].databaseId')"
+  release_run="$(gh run list --workflow "update-0.3.yml" --json databaseId | jq -r '.[].databaseId')"
   gh run watch "$release_run"
 
   cd ..
