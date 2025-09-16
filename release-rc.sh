@@ -47,7 +47,7 @@ for repo in "${repos[@]}"; do
 
   # Wait for the release to finish releasing
   sleep 5 # Sleep to prevent race conditions
-  release_run="$(gh run list --workflow "update-0.3.yml" --json databaseId | jq -r '.[].databaseId')"
+  release_run="$(gh run list --workflow "update-0.3.yml" --json databaseId | jq -r '.[0].databaseId')"
   gh run watch "$release_run"
 
   cd ..
