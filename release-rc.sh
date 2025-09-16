@@ -37,13 +37,14 @@ bump_versions() {
   gh run watch "$update_run" --exit-status || exit 1
 
   # Wait for the CI on the PR to pass before merging
-  pr="$(gh pr list --author "app/github-actions" --created "$DATE" --json number | jq -r '.[0].number')"
+  pr="$(gh pr list --author "app/github-actions" --json number | jq -r '.[0].number')"
   gh pr close "$pr"
   gh pr reopen "$pr"
   sleep 5 # Sleep to prevent race conditions
   gh pr checks "$pr" --watch
 
   # Attempt to merge with different strategies.
+  sleep 5 # Sleep to prevent race conditions
   if gh pr merge "$pr" --merge --delete-branch; then
     echo "Merged with merge strategy."
   elif gh pr merge "$pr" --squash --delete-branch; then
@@ -65,7 +66,7 @@ release() {
   gh run watch "$release_run" --exit-status || exit 1
 
   # Validate the release went through
-  sleep 5 # Sleep to prevent race conditions
+  sleep 12 # Sleep to prevent race conditions
   local proposal_name="${repo_name#wasi-}"
   oras manifest fetch ghcr.io/webassembly/wasi/"$proposal_name":0.3.0-rc-"$DATE" || exit 1
 }
@@ -82,15 +83,15 @@ main() {
     git clone "https://github.com/$repo.git"
     cd "$repo_name" || exit 1
 
-    if ! (gh release view "$TAG" &>/dev/null); then
-      # Bump the versions in the WIT if we haven't already
-      # done so in a previous run (idempotency)
-      bump_versions "$repo_name"
-    else
-      # If we've already tried (and failed) to make a release,
-      # delete the tags and try again
-      delete_release_and_tag
-    fi
+    # if ! (gh release view "$TAG" &>/dev/null); then
+    #   # Bump the versions in the WIT if we haven't already
+    #   # done so in a previous run (idempotency)
+    #   bump_versions "$repo_name"
+    # else
+    #   # If we've already tried (and failed) to make a release,
+    #   # delete the tags and try again
+    #   delete_release_and_tag
+    # fi
 
     # Regardless, try to run the release again
     release
