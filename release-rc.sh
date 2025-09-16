@@ -10,12 +10,12 @@ TAG="0.3.0-rc-$DATE"
 
 # Define array of repo names (owner/repo format)
 repos=(
-  # "webassembly/wasi-random"
+  "webassembly/wasi-random"
   "webassembly/wasi-clocks"
-  # "webassembly/wasi-filesystem"
-  # "webassembly/wasi-sockets"
-  # "webassembly/wasi-cli"
-  # "webassembly/wasi-http"
+  "webassembly/wasi-filesystem"
+  "webassembly/wasi-sockets"
+  "webassembly/wasi-cli"
+  "webassembly/wasi-http"
 )
 
 delete_release_and_tag() {
@@ -83,19 +83,20 @@ main() {
     git clone "https://github.com/$repo.git"
     cd "$repo_name" || exit 1
 
-    # if ! (gh release view "$TAG" &>/dev/null); then
-    #   # Bump the versions in the WIT if we haven't already
-    #   # done so in a previous run (idempotency)
-    #   bump_versions "$repo_name"
-    # else
-    #   # If we've already tried (and failed) to make a release,
-    #   # delete the tags and try again
-    #   delete_release_and_tag
-    # fi
+    if ! (gh release view "$TAG" &>/dev/null); then
+      # Bump the versions in the WIT if we haven't already
+      # done so in a previous run (idempotency)
+      bump_versions "$repo_name"
+    else
+      # If we've already tried (and failed) to make a release,
+      # delete the tags and try again
+      delete_release_and_tag
+    fi
 
-    # Regardless, try to run the release again
+    # We're now ready to run the release
     release
 
+    # All done, get ready for the next iteration
     cd ..
     printf "/n/n"
   done
