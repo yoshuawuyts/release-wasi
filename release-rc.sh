@@ -47,12 +47,21 @@ bump_versions() {
   sleep 5 # Sleep to prevent race conditions
   if gh pr merge "$pr" --merge --delete-branch; then
     echo "Merged with merge strategy."
+  elif gh pr merge "$pr" --rebase --delete-branch; then
+    echo "Merged with rebase strategy."
   elif gh pr merge "$pr" --squash --delete-branch; then
     echo "Merged with squash strategy."
   else
     echo "Error: Failed to merge PR $pr with either strategy." >&2
     exit 1
   fi
+
+  # Vatidate that the PR went through OK
+  # sleep 5
+  # gh api repos/WebAssembly/"$REPO_NAME"/contents/wit-0.3.0-draft/world.wit --jq '.content' |
+  #   base64 --decode |
+  #   grep $TAG ||
+  #   exit 1
 }
 
 release() {
@@ -66,7 +75,7 @@ release() {
   gh run watch "$release_run" --exit-status || exit 1
 
   # Validate the release went through
-  sleep 12 # Sleep to prevent race conditions
+  sleep 16 # Sleep to prevent race conditions
   local proposal_name="${repo_name#wasi-}"
   oras manifest fetch ghcr.io/webassembly/wasi/"$proposal_name":0.3.0-rc-"$DATE" || exit 1
 }
