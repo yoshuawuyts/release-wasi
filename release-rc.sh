@@ -49,7 +49,7 @@ release() {
 
   # Wait for the release to finish releasing
   sleep 5 # Sleep to prevent race conditions
-  release_run="$(gh run list --workflow "update-0.3.yml" --created "$DATE" --json databaseId | jq -r '.[0].databaseId')"
+  release_run="$(gh run list --workflow "publish-0.3.yml" --created "$DATE" --json databaseId | jq -r '.[0].databaseId')"
   gh run watch "$release_run" --exit-status || exit 1
 
   # Validate the release went through
