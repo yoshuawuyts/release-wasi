@@ -10,9 +10,9 @@ TAG="0.3.0-rc-$DATE"
 
 # Define array of repo names (owner/repo format)
 repos=(
-  "webassembly/wasi-random"
+  # "webassembly/wasi-random"
   # "webassembly/wasi-clocks"
-  # "webassembly/wasi-filesystem"
+  "webassembly/wasi-filesystem"
   # "webassembly/wasi-sockets"
   # "webassembly/wasi-cli"
   # "webassembly/wasi-http"
@@ -55,7 +55,7 @@ release() {
   # Validate the release went through
   sleep 5 # Sleep to prevent race conditions
   local proposal_name="${repo_name#wasi-}"
-  oras manifest fetch ghcr.io/webassembly/"$proposal_name":0.3.0-rc-"$DATE" || exit 1
+  oras manifest fetch ghcr.io/webassembly/wasi/"$proposal_name":0.3.0-rc-"$DATE" || exit 1
 }
 
 main() {
