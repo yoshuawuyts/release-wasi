@@ -11,8 +11,8 @@ TAG="0.3.0-rc-$DATE"
 # Define array of repo names (owner/repo format)
 repos=(
   # "webassembly/wasi-random"
-  # "webassembly/wasi-clocks"
-  "webassembly/wasi-filesystem"
+  "webassembly/wasi-clocks"
+  # "webassembly/wasi-filesystem"
   # "webassembly/wasi-sockets"
   # "webassembly/wasi-cli"
   # "webassembly/wasi-http"
@@ -37,9 +37,21 @@ bump_versions() {
   gh run watch "$update_run" --exit-status || exit 1
 
   # Wait for the CI on the PR to pass before merging
-  pr="$(gh pr list --author "app/github-actions" --json number | jq -r '.[0].number')"
+  pr="$(gh pr list --author "app/github-actions" --created "$DATE" --json number | jq -r '.[0].number')"
+  gh pr close "$pr"
+  gh pr reopen "$pr"
+  sleep 5 # Sleep to prevent race conditions
   gh pr checks "$pr" --watch
-  gh pr merge "$pr" --merge --delete-branch
+
+  # Attempt to merge with different strategies.
+  if gh pr merge "$pr" --merge --delete-branch; then
+    echo "Merged with merge strategy."
+  elif gh pr merge "$pr" --squash --delete-branch; then
+    echo "Merged with squash strategy."
+  else
+    echo "Error: Failed to merge PR $pr with either strategy." >&2
+    exit 1
+  fi
 }
 
 release() {
